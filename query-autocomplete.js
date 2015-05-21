@@ -5,7 +5,7 @@ $(function () {
     var tags = [];
 
     // TODO: soft code the placeholder
-    var tagsInput = $('<div class="tags"><input type="text" placeholder="Add tags here..."></div>');
+    var tagsInput = $('<div tabindex="-1" class="tags"><input type="text" placeholder="Add tags here..."></div>');
     var input = tagsInput.find('input[type="text"]');
 
     function pushTag(tag) {
@@ -40,7 +40,11 @@ $(function () {
     }
 
     input.keydown(function (event) {
-      if (event.keyCode === 13) {
+      if (event.keyCode === 13 || event.keyCode === 9) { 
+        if (event.keyCode === 9) {
+          event.stopPropagation();
+          event.preventDefault();
+        }
         pushTag(input.val());
       } else if (event.keyCode === 8 && input.val() === '') {
         popTag();
