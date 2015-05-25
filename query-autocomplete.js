@@ -1,130 +1,121 @@
+// TODO: move this Webpack.
+
 $(function () {
 
-  function EventEmitter(){
-    this._callbacks = {}
-  }
+  // TODO: use CommonJS event emitter.
+  class EventEmitter {
+    constructor() {
+      this._callbacks = {};
+    }
 
-  EventEmitter.prototype.on = function (key, callback) {
-    this._callbacks[key] = this._callbacks[key] || [];
-    this._callbacks[key].push(callback);
-  };
+    on(key, callback) {
+      this._callbacks[key] = this._callbacks[key] || [];
+      this._callbacks[key].push(callback);
+    }
 
-  EventEmitter.prototype.emit = function (key) {
-    var args = Array.prototype.slice.call(arguments, 1, arguments.length);
-    this._callbacks[key] && this._callbacks[key].forEach(function (callback) {
-      callback.apply(null, args);
-    });
-  };
-
-  //////////////////////////////////////////////////////////////////////////////
-
-  function QueryPill() {
-    EventEmitter.call(this);
-
-    this._value = '';
-  }
-
-  _.extend(QueryPill.prototype, EventEmitter.prototype);
-
-  QueryPill.prototype.render = function () {
-    var self = this;
-
-    this.$el = $('<span></span>');
-
-    // TODO: use a "dropdown input" rather than a regular input.
-    this._$input = $('<input type="text">');
-
-    this._$input.keyDown(function () {
-      if (event.keyCode === 13 || event.keyCode === 9) { 
-        if (event.keyCode === 9) {
-          event.stopPropagation();
-          event.preventDefault();
-        }
-        self._nextStep();
-      } else if (event.keyCode === 8 && input.val() === '') {
-        throw new Error('Not yet implemented');
+    emit(key, ...params) {
+      if (this._callbacks[key]) {
+        this._callbacks[key].forEach((callback) => {
+          null::callback(...params);
+        });
       }
-    });
-  };
-
-  QueryPill.prototype._nextStep = function () {
-    throw new Error('Not yet implemented');
-  };
-
-  QueryPill.prototype._updateView = function () {
-    throw new Error('Why does this even exist?');
-  };
+    }
+  }
 
   //////////////////////////////////////////////////////////////////////////////
 
+  // <!-- A <query-input /> will be equivalent to: -->
+  //
+  // <div>
+  //   <span class="pills-holder">
+  //     <span>
+  //       <input type="text">
+  //       <input type="text">
+  //       <input type="text">
+  //     </span>
+  //     <!-- ... more pills below. -->
+  //   </span>
+  //   <input class="mock-input" type="text">
+  // </div>
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  class Query {
+    constructor(query) {
+      this.property = query.property;
+      this.comparator = query.comparator;
+      this.value = query.value;
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  class QueryPill {
+    constructor(query) {
+      this._query = query;
+      this.$el = $('<span></span>');
+    }
+
+    render() {
+      this._$propertyInput = $('<input type="text" class="property">');
+      this._$comparatorInput = $('<input type="text" class="comparator">');
+      this._$valueInput = $('<input type="text" class="value">');
+
+      this._$propertyInput.val(this._query.property);
+      this._$comparatorInput.val(this._query.comparator);
+      this._$valueInput = $(this._query.value);
+
+      this.$el.append(this._$propertyInput);
+      this.$el.append(this._$comparatorInput);
+      this.$el.append(this._$valueInput);
+
+      return this;
+    }
+
+    focus(property) {
+      this._$propertyInput.val(property);
+      this._$propertyInput.focus();
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
+  class QueryInput {
+    constructor() {
+      this.$el = $('<div class="query-input"></div>');
+      this._queries = [];
+    }
+
+    render() {
+      this.$el.html(`
+        <span class="pills-holder"></span>
+        <input class="mock-input" type="text">
+      `);
+
+      const $pillsHolder = this.$el.find('.pills-holder');
+      this._$pillsHolder = $pillsHolder;
+
+      var $input = this.$el.find('.mock-input');
+      this._$input = $input;
+      $input.keyup(() => {
+        if ($input.val()) {
+          this.addQuery($input.val());
+        }
+      });
+
+      return this;
+    }
+
+    addQuery(property) {
+      const query = new Query({ property: query });
+      this._queries.push(query);
+      const queryPill = new QueryPill(query).render();
+      this._$pillsHolder.append(queryPill.$el);
+      queryPill.focus(property);
+      this._$input.val('');
+    }
+  }
+
+  // TODO: have this be in the final build script instead of this source file.
   window.QueryInput = QueryInput;
-  function QueryInput() {
-    var self = this;
-
-    var tags = [];
-    this._tags = tags;
-
-    this.$el = $('<div tabindex="-1" class="tags"></div>');
-  }
-
-  QueryInput.prototype.render = function () {
-    var self = this;
-
-    // This is the input that will be detached from the DOM, and reattached.
-    var $input = $(document.createElement('input'));
-
-    $input.attr({
-      type: 'text',
-      // TODO: soft code the placeholder
-      placeholder: 'Add tags here...'
-    });
-    this._$input = $input;
-    this.$el.append($input);
-
-    this.$el.focusin(function () {
-      $input.focus();
-    });
-
-    this._$input.keydown(function (event) {
-      if (event.keyCode === 13 || event.keyCode === 9) { 
-        if (event.keyCode === 9) {
-          event.stopPropagation();
-          event.preventDefault();
-        }
-        self._pushTag($input.val()); // TODO: do something else.
-      } else if (event.keyCode === 8 && $input.val() === '') {
-        self._popTag(); // TODO: do something else.
-      }
-    });
-
-    this._$input.focus(function (event) {
-      event.stopPropagation();
-    });
-
-    return this;
-  };
-
-  QueryInput.prototype._pushTag = function (tag) {
-    var self = this;
-
-    this._tags.push(tag);
-    this._$input.val('');
-
-    // TODO: repetition of code. DRY it out.
-    this.$el.find('.tag').remove();
-    this._tags.slice().reverse().forEach(function (tag) {
-      self.$el.prepend($('<span class="tag">' + tag + '</span>'));
-    });
-  };
-
-  QueryInput.prototype._popTag = function (tag) {
-    var self = this;
-
-    this._tags.pop();
-    this.$el.find('.tag').remove();
-    this._tags.slice().reverse().forEach(function (tag) {
-      self.$el.prepend($('<span class="tag">' + tag + '</span>'));
-    });
-  };
-
 });
