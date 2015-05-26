@@ -50,31 +50,72 @@ $(function () {
 
   //////////////////////////////////////////////////////////////////////////////
 
+  class AutoSizeInput {
+    constructor(value, className) {
+      this.$el = $(`<input type="text" class="${className}">`);
+
+      this.$el.keyup(function () {
+        //firstly take the content or placeholder if content is missing
+        var content = 
+            $(this).val().length > 0 ? $(this).val() :
+            $(this).prop("placeholder");
+        //create testing element with same content as input
+        var widthTester = $("<span>"+content+"</span>").hide();
+        // place testing element into DOM after input (so it inherits same
+        // formatting as input does) 
+        widthTester.insertAfter($(this));
+        //set inputs width; you may want to use outerWidth() or innerWidth()
+        //depending whether you want to count padding and border or not
+        $(this).css("width",(widthTester.width() + 200)+"px");
+        //remove element from DOM
+        widthTester.remove();
+     });
+    }
+
+    val(...param) {
+      return this.$el.val(...param);
+    }
+
+    focus() {
+      this.$el.focus();
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////////////
+
   class QueryPill {
     constructor(query) {
       this._query = query;
-      this.$el = $('<span></span>');
+      this.$el = $('<span class="pill"></span>');
     }
 
     render() {
-      this._$propertyInput = $('<input type="text" class="property">');
-      this._$comparatorInput = $('<input type="text" class="comparator">');
-      this._$valueInput = $('<input type="text" class="value">');
+      // $('<input type="text" class="property">');
+      this._propertyInput =
+        new AutoSizeInput(this._query.property, 'property');
 
-      this._$propertyInput.val(this._query.property);
-      this._$comparatorInput.val(this._query.comparator);
-      this._$valueInput = $(this._query.value);
+      // this._$comparatorInput = $('<input type="text" class="comparator">');
+      this._comparatorInput =
+        new AutoSizeInput(this._query.comparator, 'comparator');
 
-      this.$el.append(this._$propertyInput);
-      this.$el.append(this._$comparatorInput);
-      this.$el.append(this._$valueInput);
+      // this._$valueInput = $('<input type="text" class="value">');
+      this._valueInput =
+        new AutoSizeInput(this._query.value, 'value');
+
+      // this._$propertyInput.val(this._query.property);
+      // this._$comparatorInput.val(this._query.comparator);
+      // this._$valueInput.val(this._query.value);
+
+      this.$el.append(this._propertyInput.$el);
+      this.$el.append(this._comparatorInput.$el);
+      this.$el.append(this._valueInput.$el);
 
       return this;
     }
 
     focus(property) {
-      this._$propertyInput.val(property);
-      this._$propertyInput.focus();
+      this._propertyInput.val(property);
+      this._propertyInput.focus();
     }
   }
 

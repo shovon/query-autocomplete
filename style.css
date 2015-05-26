@@ -1,0 +1,10 @@
+.query-input .pills-holder .pill {
+  background-color: gray;
+}
+
+.query-input .pills-holder .pill input {
+  background: none;
+  border: none;
+  outline: none;
+  width: 0;
+}
