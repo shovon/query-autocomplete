@@ -1,0 +1,29 @@
+.query-input {
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  padding: 5px;
+}
+
+.query-input > input {
+  border: none;
+  outline: none;
+}
+
+.query-input .pills-holder .pill {
+  background-color: #CFE1FF;
+  border-radius: 5px;
+}
+
+.query-input .pills-holder .pill input {
+  background: none;
+  border: none;
+  outline: none;
+  width: 0;
+}
+
+.query-input .pills-holder .pill input.property {
+  font-weight: bold;
+}
+
+.query-input .pills-holder .pill input.value {
+  font-style: italic;
+}
