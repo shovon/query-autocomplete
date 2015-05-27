@@ -1,15 +1,35 @@
 import $ from 'jquery';
+import Query from './Query';
+import QueryPill from './QueryPill';
+import createStyles from 'styles.js';
+import { APP_NAME } from './constants';
 
-class QueryInput {
+const classNames = createStyles({
+  queryInput: {
+    fontFamily: '"Helvetica Neue", Arial, sans-serif',
+    padding: '12px',
+    border: '1px solid black'
+  },
+
+  input: {
+    border: 'none',
+    outline: 'none'
+  }
+}, APP_NAME);
+
+export default class QueryInput {
   constructor() {
-    this.$el = $('<div class="query-input"></div>');
+    this.$el = $(`<div class="${classNames.queryInput}"></div>`);
     this._queries = [];
   }
 
   render() {
     this.$el.html(`
-      <span class="pills-holder"></span>
-      <input class="mock-input" type="text">
+      <span class="pills-holder ${classNames.pillsHolder}"></span>
+      <input
+        class="mock-input ${classNames.input}"
+        placeholder="Start typing your query"
+        type="text">
     `);
 
     const $pillsHolder = this.$el.find('.pills-holder');
@@ -24,6 +44,7 @@ class QueryInput {
     });
 
     this.$el.focus(({target}) => {
+      console.log('Focused');
       $input.focus();
     });
 

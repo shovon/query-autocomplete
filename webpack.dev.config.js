@@ -1,21 +1,12 @@
 module.exports = {
   entry: {
-    app: ['./src/QueryInput.js']
+    app: ['./src/app.js']
   },
   output: {
-    libraryTarget: 'var',
-    library: 'QueryInput',
-    path: './build',
+    path: './public',
     filename: 'bundle.js',
     sourceMapFile: 'bundle.map'
   },
-  externals: [
-    {
-      "jquery": {
-        root: "jQuery"
-      }
-    }
-  ],
   devtool: 'source-map',
   module: {
     loaders: [

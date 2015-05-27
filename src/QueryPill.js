@@ -1,20 +1,32 @@
 import $ from 'jquery';
+import AutoSizingInput from './AutoSizingInput';
+import createStyles from 'styles.js';
+import { APP_NAME } from './constants';
+
+const classNames = createStyles({
+  pill: {
+    backgroundColor: '#CFE1FF',
+    borderRadius: '5px',
+    margin: '5px',
+    padding: '5px'
+  }
+}, APP_NAME);
 
 export default class QueryPill {
   constructor(query) {
     this._query = query;
-    this.$el = $('<span class="pill"></span>');
+    this.$el = $(`<span class="pill ${classNames.pill}"></span>`);
   }
 
   render() {
     this._propertyInput =
-      new AutoSizeInput(this._query.property, 'property');
+      new AutoSizingInput(this._query.property, 'property');
 
     this._comparatorInput =
-      new AutoSizeInput(this._query.comparator, 'comparator');
+      new AutoSizingInput(this._query.comparator, 'comparator');
 
     this._valueInput =
-      new AutoSizeInput(this._query.value, 'value');
+      new AutoSizingInput(this._query.value, 'value');
 
     this.$el.append(this._propertyInput.$el);
     this.$el.append(this._comparatorInput.$el);
