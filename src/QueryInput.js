@@ -53,9 +53,11 @@ export default class QueryInput {
 
     const $input = this.$el.find('.mock-input');
     this._$input = $input;
-    $input.keyup(() => {
-      if ($input.val()) {
+    $input.keyup((e) => {
+      if ($input.val().length > 0) {
         this.addQuery($input.val());
+      } else if (e.keyCode === 8) {
+        this.focusLastPill();
       }
     });
 
@@ -106,6 +108,10 @@ export default class QueryInput {
       this._$input.attr('placeholder', defaultPlaceholder);
       this._$input.focus();
     }
+  }
+
+  focusLastPill() {
+    this.refreshPillsHolder();
   }
 
   addQuery(queryString) {
