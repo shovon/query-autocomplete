@@ -17,9 +17,11 @@ const classNames = createStyles({
   }
 }, APP_NAME);
 
+// TODO: handle the case when the user hits backspace from the empty text input.
+
 export default class QueryInput {
   constructor() {
-    this.$el = $(`<div class="${classNames.queryInput}"></div>`);
+    this.$el = $(`<div tabindex="-1" class="${classNames.queryInput}"></div>`);
     this._queries = [];
   }
 
@@ -44,7 +46,6 @@ export default class QueryInput {
     });
 
     this.$el.focus(({target}) => {
-      console.log('Focused');
       $input.focus();
     });
 
@@ -54,9 +55,20 @@ export default class QueryInput {
   addQuery(property) {
     const query = new Query({ property: query });
     this._queries.push(query);
+    
     const queryPill = new QueryPill(query).render();
+    queryPill.on('deleted', () => {
+
+    });
+
+    queryPill.on('go-back', () => {
+      const queryIndex = this._queries.indexOf(query);
+
+    });
+
     this._$pillsHolder.append(queryPill.$el);
     queryPill.focus(property);
     this._$input.val('');
+    this._$input.attr('placeholder', '');
   }
 }
