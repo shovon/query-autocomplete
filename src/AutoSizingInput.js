@@ -13,33 +13,23 @@ const classNames = createStyles({
 }, APP_NAME);
 
 export default class AutoSizingInput extends EventEmitter {
-  constructor(value, className) {
+  constructor(value) {
     super();
-
-    this._lastValue = value;
 
     this.$el = $(`
       <input
         type="text"
-        class="${classNames.input} ${className}">`);
+        class="${classNames.input}">`);
 
     // This handles the case when the user changes the content of the textbox.
     this.$el.on('propertychange change click keyup input paste', (e) => {
 
-      // Update width.
-      const content = 
-        this.val().length > 0 ? this.val() :
-        this.$el.prop("placeholder");
-      const widthTester = $("<span>"+content+"</span>").hide();
-      widthTester.insertAfter(this.$el);
-      this.$el.css("width",(widthTester.width() + 10)+"px");
-      widthTester.remove();
+      this.adjustWidth();
 
-      this.emit('change', this.$el.val());
+      this.emit('change');
 
       // TODO: determine if the user pressed backspace or not.
       if (this.val() === '' && e.keyCode === 8) {
-        console.log('deleted');
         this.emit('deleted');
       }
 
@@ -47,6 +37,17 @@ export default class AutoSizingInput extends EventEmitter {
 
     });
 
+  }
+
+  adjustWidth() {
+    // Update width.
+    const content = 
+      this.val().length > 0 ? this.val() :
+      this.$el.prop("placeholder");
+    const widthTester = $("<span>"+content+"</span>").hide();
+    widthTester.insertAfter(this.$el);
+    this.$el.css("width",(widthTester.width() + 10)+"px");
+    widthTester.remove();
   }
 
   val(...param) {

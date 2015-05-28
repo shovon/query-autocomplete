@@ -3,6 +3,7 @@ import Query from './Query';
 import QueryPill from './QueryPill';
 import createStyles from 'styles.js';
 import { APP_NAME } from './constants';
+import { removeAt, setAt } from 'idempotent/bound';
 
 const classNames = createStyles({
   queryInput: {
@@ -17,12 +18,25 @@ const classNames = createStyles({
   }
 }, APP_NAME);
 
+// TODO: unit test this
+function indexOf(arr, predicate) {
+  for (let i = 0; i < arr.length; i++) {
+    if (predicate(arr[i], i)) {
+      return i
+    }
+  }
+  return -1;
+}
+
+const defaultPlaceholder = 'Start typing your query';
+
 // TODO: handle the case when the user hits backspace from the empty text input.
 
 export default class QueryInput {
   constructor() {
     this.$el = $(`<div tabindex="-1" class="${classNames.queryInput}"></div>`);
     this._queries = [];
+    this._index = 0;
   }
 
   render() {
@@ -30,7 +44,7 @@ export default class QueryInput {
       <span class="pills-holder ${classNames.pillsHolder}"></span>
       <input
         class="mock-input ${classNames.input}"
-        placeholder="Start typing your query"
+        placeholder="${defaultPlaceholder}"
         type="text">
     `);
 
@@ -52,23 +66,52 @@ export default class QueryInput {
     return this;
   }
 
-  addQuery(property) {
-    const query = new Query({ property: query });
-    this._queries.push(query);
-    
-    const queryPill = new QueryPill(query).render();
-    queryPill.on('deleted', () => {
+  refreshPillsHolder(focusedIndex = this._queries.length - 1) {
+    this._$pillsHolder.empty();
 
+    this._queries.forEach((query, index) => {
+
+      const queryPill = new QueryPill(query).render();
+
+      queryPill.once('deleted', () => {
+        const index = indexOf(this._queries, (a) => {
+          return a.id === query.id
+        });
+        this._queries = this._queries::removeAt(index);
+        this.refreshPillsHolder(index - 1);
+      });
+
+      queryPill.on('change', () => {
+        const newQuery = new Query(query.id, queryPill.val());
+        const index = indexOf(this._queries, (a) => {
+          return a.id === query.id
+        });
+        if (index === -1) { throw new Error('Not supposed to be negative'); }
+        this._queries[index] = newQuery;
+      });
+
+      this._$pillsHolder.append(queryPill.$el);
+      queryPill.adjustWidth();
+
+      if (index === focusedIndex) {
+        queryPill.focus();
+      }
     });
 
-    queryPill.on('go-back', () => {
-      const queryIndex = this._queries.indexOf(query);
+    if (this._queries.length !== 0) {
+      this._$input.val('');
+      this._$input.attr('placeholder', '');
+    } else {
+      this._$input.val('');
+      this._$input.attr('placeholder', defaultPlaceholder);
+      this._$input.focus();
+    }
+  }
 
-    });
+  addQuery(queryString) {
+    this._queries.push(new Query(this._index, queryString));
+    this._index++;
 
-    this._$pillsHolder.append(queryPill.$el);
-    queryPill.focus(property);
-    this._$input.val('');
-    this._$input.attr('placeholder', '');
+    this.refreshPillsHolder();
   }
 }

@@ -11,10 +11,6 @@ const classNames = createStyles({
     margin: '5px',
     padding: '5px',
     display: 'inline-block'
-  },
-
-  property: {
-    fontWeight: 'bold'
   }
 }, APP_NAME);
 
@@ -29,36 +25,20 @@ export default class QueryPill extends EventEmitter {
   }
 
   render() {
-    this._propertyInput =
-      new AutoSizingInput(this._query.property, 'property');
+    this._input =
+      new AutoSizingInput(this._query);
 
-    this._comparatorInput =
-      new AutoSizingInput(this._query.comparator, 'comparator');
+    // TODO: handle the event when the value in the input changes.
+    this.$el.append(this._input.$el);
 
-    this._valueInput =
-      new AutoSizingInput(this._query.value, 'value');
-
-    this.$el.append(this._propertyInput.$el);
-    this.$el.append(this._comparatorInput.$el);
-    this.$el.append(this._valueInput.$el);
-
-    // Edit logic.
-
-    this._valueInput.on('deleted', () => {
-      this._comparatorInput.focus();
+    this._input.on('deleted', () => {
+      this.removePill();
     });
 
-    this._comparatorInput.on('deleted', () => {
-      this._propertyInput.focus();
-    });
-
-    this._propertyInput.on('deleted', () => {
-      if (this._valueInput.isEmpty() && this._comparatorInput.isEmpty()) {
-        this.removePill();
-      } else {
-        this.goBack();
-      }
-    });
+    this._input.on('change', () => {
+      this.emit('change');
+    })
+    this._input.val(this._query.query);
 
     return this;
   }
@@ -71,8 +51,16 @@ export default class QueryPill extends EventEmitter {
     this.emit('go-back');
   }
 
-  focus(property) {
-    this._propertyInput.val(property);
-    this._propertyInput.focus();
+  val() {
+    return this._input.val();
+  }
+
+  adjustWidth() {
+    this._input.adjustWidth();
+  }
+
+  focus() {
+    this._input.val();
+    this._input.focus();
   }
 }

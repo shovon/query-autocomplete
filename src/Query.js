@@ -1,7 +1,9 @@
 export default class Query {
-  constructor(query) {
-    this.property = query.property;
-    this.comparator = query.comparator;
-    this.value = query.value;
+  constructor(id, query) {
+    this._id = id;
+    this._query = query;
   }
+
+  get query() { return this._query; }
+  get id() { return this._id; }
 }

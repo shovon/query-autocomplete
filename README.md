@@ -15,3 +15,7 @@ npm run develop
 ## TODO
 
 - allow the user to use Zepto instead of jQuery, if they so choose
+
+## Future Goal
+
+- Write this in React
